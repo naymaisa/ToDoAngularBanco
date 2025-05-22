@@ -1,7 +1,7 @@
 Links uteis:
-https://icons.getbootstrap.com/
-https://fonts.google.com/
-https://pixabay.com/pt/
+API JAVA: https://github.com/naymaisa/ApiToDoBancoJava
+
+
 
 
 Minhas redes sociais: 
