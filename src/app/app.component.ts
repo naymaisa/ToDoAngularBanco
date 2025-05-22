@@ -1,55 +1,58 @@
-import { NgClass, NgFor } from '@angular/common';
-import { Component } from '@angular/core';
+import { NgClass, NgFor, NgIf } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
+import { TodoService } from './todo.service';
 
 export interface TodoItem{
-  id:number;
+  id?:string;
   task:string;
   completed: boolean;
 }
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FormsModule, NgFor,NgClass],
+  standalone: true,
+  imports: [RouterOutlet, FormsModule, NgFor,NgClass, NgIf],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit {
   todoList :TodoItem[]= [];
   newTask : string='';
 
+  constructor(private todoService: TodoService){}
+
   ngOnInit(){
-    const saved = localStorage.getItem('todoList');
-    if(saved){
-      this.todoList= JSON.parse(saved);
-    }
+    this.todoService.getTasks().subscribe(tasks => this.todoList= tasks);
   }
 
   addTask():void{
     if(this.newTask.trim()!== ''){
-      const newTodoItem: TodoItem ={
-        id: Date.now(),
+      const task: TodoItem ={
         task: this.newTask,
         completed: false
       }
-      this.todoList.push(newTodoItem)
+      this.todoService.addTask(task).subscribe(created => {
+         this.todoList.push(created)
       this.newTask=''
+      })
     }
-    localStorage.setItem('todoList',JSON.stringify(this.todoList));
   }
-  toggleCompleted(index:number):void{
-    this.todoList[index].completed = !this.todoList[index].completed
-    localStorage.setItem('todoList',JSON.stringify(this.todoList));
+  toggleCompleted(index:number){
+    const task = this.todoList[index];
+    task.completed =!task.completed;
+    this.todoService.updateTask(task).subscribe(updated=>{
+      this.todoList[index] =updated;
+    })
   }
 
-  deleteTask(id:number): void{
-    this.todoList= this.todoList.filter(item => item.id !== id)
-    console.log(this.todoList)
-    localStorage.setItem('todoList',JSON.stringify(this.todoList));
-  }
+  deleteTask(id:string){
+    this.todoService.deleteTask(id).subscribe(()=>{
+ this.todoList= this.todoList.filter(task => task.id !== id)
+    })
 }
 
-
+}
 
